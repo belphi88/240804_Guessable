@@ -127,14 +127,8 @@ exports.addQuestions = async (req, res, next) => {
       if (!(await checkExistingQuestion(date, CountryQuestion))) {
         restructredData.push({
           date: date,
-          clueMainBefore: country.clueMainBefore.replace(
-            "(Country)",
-            "(Country)"
-          ),
-          clueMainAfter: country.clueMainAfter.replace(
-            "(Country)",
-            country.countryName
-          ),
+          clueMainBefore: country.clueMainBefore,
+          clueMainAfter: country.clueMainAfter,
           clueImage:
             country.clueImage !== "NA" ? country.clueImage : "sample_image.jpg",
           category: "country",
@@ -159,8 +153,8 @@ exports.addQuestions = async (req, res, next) => {
       if (!(await checkExistingQuestion(date, PeopleQuestion))) {
         restructredData.push({
           date: date,
-          clueMainBefore: person.clueMainBefore.replace("X", person.personName),
-          clueMainAfter: person.clueMainAfter.replace("X", person.personName),
+          clueMainBefore: person.clueMainBefore,
+          clueMainAfter: person.clueMainAfter,
           clueImage:
             person.clueImage !== "NA" ? person.clueImage : "sample_image.jpg",
           category: "people",
