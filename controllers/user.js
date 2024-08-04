@@ -114,7 +114,7 @@ exports.addQuestions = async (req, res, next) => {
             movieName: movie.movieName,
             clueYear: movie.clueYear,
             clueDirector: movie.clueDirector,
-            clueCast: JSON.parse(movie.clueCast),
+            clueCast: movie.clueCast,
             imdbLink: movie.imdbLink
           }
         });
