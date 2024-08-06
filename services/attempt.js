@@ -287,7 +287,7 @@ class Attempt {
           where: { id: attemptDataId }
         }
       );
-      await UserServices.scheduleJob(attempt.userID, questionType);
+      // await UserServices.scheduleJob(attempt.userID, questionType);
       response = await this.postCorrectAnswer(
         questionType,
         questionData,
