@@ -1,6 +1,5 @@
 const { QuestionsConstants } = require("./constants");
 class Utils {
-
   //For unregistered users
   static getCurrentDate() {
     const today = new Date();
@@ -13,6 +12,22 @@ class Utils {
     // return "2024-07-31";
   }
 
+  static getYesterdayDate() {
+    const today = new Date();
+    // Format the date as needed
+    today.setDate(today.getDate() - 1);
+
+    // Format the date as needed
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // January is 0!
+    const day = String(today.getDate()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+    // return "2024-08-14";
+  }
+
+
   //For registered users
   static getCurrentDate(timezone) {
     const options = {
@@ -24,7 +39,7 @@ class Utils {
     const formatter = new Intl.DateTimeFormat("en-US", options);
     const parts = formatter.formatToParts(new Date());
     const formattedDate = `${parts[4].value}-${parts[0].value}-${parts[2].value}`;
-     console.log("Timezone DATE");
+    console.log("Timezone DATE");
     return formattedDate;
     // return "2024-08-04";
   }

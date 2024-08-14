@@ -36,6 +36,21 @@ class MovieQuestion extends Question {
     }
   }
 
+  async getQuestionForStreakReset(date) {
+    try {
+      let question = await super.getQuestionForStreakReset(date);
+      if (!question) {
+        let error = new Error("Could not fetch question please try again!");
+        // error.statusCode = 404;
+        // throw error;
+        return undefined;
+      }
+      return question;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   createQuestionResponse(question) {
     let response = {};
     if (!question) {
@@ -65,18 +80,18 @@ class MovieQuestion extends Question {
       attemptInfo.clueTwo = {
         Director: question["MovieQuestion.clueDirector"]
       };
-       response.allResponses = [attempt.firstAttempt, attempt.secondAttempt];
+      response.allResponses = [attempt.firstAttempt, attempt.secondAttempt];
     }
 
     if (attemptValue >= 3) {
       attemptInfo.clueThree = {
         Cast: question["MovieQuestion.clueCast"]
       };
-       response.allResponses = [
-         attempt.firstAttempt,
-         attempt.secondAttempt,
-         attempt.thirdAttempt
-       ];
+      response.allResponses = [
+        attempt.firstAttempt,
+        attempt.secondAttempt,
+        attempt.thirdAttempt
+      ];
     }
     if (attemptInfo.isCorrect || attemptValue == 4) {
       response.answer = question["MovieQuestion.movieName"];

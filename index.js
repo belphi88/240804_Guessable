@@ -10,6 +10,7 @@ const association = require("./models/associations/associations");
 const questionRoutes = require("./routes/question");
 const Utils = require("./utils/utils");
 const UserServices = require("./services/user");
+const cron = require("node-cron");
 
 const app = express();
 const PORT = 8080;
@@ -51,3 +52,13 @@ app.use(express.static(path.join(__dirname, "public")));
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
+
+function resetStreakCronJon() {
+ UserServices.streakResetCron();
+}
+
+cron.schedule("0 0 * * *", resetStreakCronJon, {
+  scheduled: true,
+  timezone: "UTC"
+});
+

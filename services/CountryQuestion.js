@@ -36,6 +36,21 @@ class CountryQuestion extends Question {
     }
   }
 
+  async getQuestionForStreakReset(date) {
+    try {
+      let question = await super.getQuestionForStreakReset(date);
+      if (!question) {
+        let error = new Error("Could not fetch question please try again!");
+        // error.statusCode = 404;
+        // throw error;
+        return undefined;
+      }
+      return question;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   createQuestionResponse(question) {
     let response = {};
     // Check if question is empty or not an array
@@ -78,24 +93,24 @@ class CountryQuestion extends Question {
         attempt.thirdAttempt
       ];
     }
-      if (attempt.isCorrect || attemptValue == 4) {
-        attemptInfo.clueOne = {
-          LatLong: question["CountryQuestion.clueLatLong"]
-        };
-        attemptInfo.clueTwo = {
-          Flag: question["CountryQuestion.clueFlag"]
-        };
-        attemptInfo.clueThree = {
-          Capital: question["CountryQuestion.clueCapital"]
-        };
-        response.answer = question["CountryQuestion.countryName"];
-        response.clueMainAfter = question.clueMainAfter;
-        response.allResponses = [
-          attempt.firstAttempt,
-          attempt.secondAttempt,
-          attempt.thirdAttempt,
-          attempt.fourthAttempt
-        ]; 
+    if (attempt.isCorrect || attemptValue == 4) {
+      attemptInfo.clueOne = {
+        LatLong: question["CountryQuestion.clueLatLong"]
+      };
+      attemptInfo.clueTwo = {
+        Flag: question["CountryQuestion.clueFlag"]
+      };
+      attemptInfo.clueThree = {
+        Capital: question["CountryQuestion.clueCapital"]
+      };
+      response.answer = question["CountryQuestion.countryName"];
+      response.clueMainAfter = question.clueMainAfter;
+      response.allResponses = [
+        attempt.firstAttempt,
+        attempt.secondAttempt,
+        attempt.thirdAttempt,
+        attempt.fourthAttempt
+      ]; 
     }
     response = {
       ...response,

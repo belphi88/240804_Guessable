@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const { QuestionsConstants } = require("../utils/constants");
 const Question = require("./question");
 const QuestionModel = require("../models/questions");
+const Attempt = require("../models/attempts");
 const Utils = require("../utils/utils");
 class UserServices {
   static jobs = [{}];
@@ -129,21 +130,21 @@ class UserServices {
       })),
         {
           raw: true
-    };
-    const response = {
-      userId: user.userId,
-      name: user.name,
-      oAuthProvider: user.oAuthProvider,
-      oAuthId: user.oAuthId,
-      email: user.email,
-      additionalData: user.additionalData,
-      countryStreak: user.countryStreak,
-      movieStreak: user.movieStreak,
-      peopleStreak: user.peopleStreak,
-    };
-    const token = UserServices.getJwtToken(user);
+        };
+      const response = {
+        userId: user.userId,
+        name: user.name,
+        oAuthProvider: user.oAuthProvider,
+        oAuthId: user.oAuthId,
+        email: user.email,
+        additionalData: user.additionalData,
+        countryStreak: user.countryStreak,
+        movieStreak: user.movieStreak,
+        peopleStreak: user.peopleStreak
+      };
+      const token = UserServices.getJwtToken(user);
 
-    return { user: response, token: token, exists: false };
+      return { user: response, token: token, exists: false };
     } else {
       const response = {
         userId: user.userId,
@@ -228,11 +229,16 @@ class UserServices {
     return {
       countryStreak: user.countryStreak,
       movieStreak: user.movieStreak,
-      peopleStreak:user.peopleStreak,
+      peopleStreak: user.peopleStreak,
       maxStreak: user.maxStreak
     };
   }
-  static async setStreaks({ countryStreak, movieStreak, peopleStreak, userId }) {
+  static async setStreaks({
+    countryStreak,
+    movieStreak,
+    peopleStreak,
+    userId
+  }) {
     const user = await User.findByPk(userId);
 
     if (user) {
@@ -287,6 +293,59 @@ class UserServices {
     });
     const job = UserServices.scheduleJobForNextMidnight(user, type);
   }
+
+  static async streakResetCron() {
+    const types = ["country", "movie", "people"];
+    types.forEach(async (questionType) => {
+      const date = Utils.getYesterdayDate();
+      console.log("GOT YESTERDAY DATE ", date);
+      const question = Utils.getInstance(questionType);
+      const fetchedQues = await question.getQuestionForStreakReset(date);
+      console.log("fetchedQues ", fetchedQues?.id);
+      if (fetchedQues?.id) {
+        const questionAttemptsData = await Attempt.findAll({
+          include: [
+            {
+              model: QuestionModel,
+              where: { id: fetchedQues?.id },
+              attributes: ["id"]
+            }
+          ],
+          attributes: ["id", "attemptValue", "isCorrect", "userID"],
+          raw: true
+        });
+        console.log("ATTEMPT DATA ", questionAttemptsData);
+        const playedUserIds = questionAttemptsData.map((item) => item.userID);
+
+        console.log("PLAYED USER IDS ", playedUserIds);
+
+        const users = await User.findAll({ raw: true });
+        const allUserIds = users.map((item) => item.userId);
+        console.log("ALL USERS IDS ", allUserIds);
+        for (const userId of allUserIds) {
+          if (!playedUserIds.includes(userId)) {
+            const obj = {};
+
+            switch (questionType) {
+              case QuestionsConstants.COUNTRY:
+                obj.countryStreak = 20;
+                break;
+              case QuestionsConstants.MOVIE:
+                obj.movieStreak = 20;
+                break;
+              case QuestionsConstants.PEOPLE:
+                obj.peopleStreak = 20;
+                break;
+            }
+
+            obj.userId = userId;
+            await UserServices.setStreaks(obj);
+          }
+        }
+      }
+    });
+  }
+
   static scheduleJobForNextMidnight(user, type) {
     const currentDate = new Date().toLocaleString("en-US", {
       // timeZone: user.timeZone,
@@ -328,10 +387,16 @@ class UserServices {
     return job;
   }
 
-  static getMaxStreak(maxStreak, countryStreak, movieStreak, peopleStreak, userId) {
+  static getMaxStreak(
+    maxStreak,
+    countryStreak,
+    movieStreak,
+    peopleStreak,
+    userId
+  ) {
     console.log(maxStreak, countryStreak, movieStreak);
     if (!maxStreak) {
-      maxStreak = { countryStreak: 0, movieStreak: 0, peopleStreak : 0 };
+      maxStreak = { countryStreak: 0, movieStreak: 0, peopleStreak: 0 };
     }
 
     const updatedMaxCountryStreak =
@@ -349,7 +414,7 @@ class UserServices {
     const updatedStreak = {
       countryStreak: updatedMaxCountryStreak,
       movieStreak: updatedMaxMovieStreak,
-      peopleStreak : updatedMaxpeopleStreak
+      peopleStreak: updatedMaxpeopleStreak
     };
     console.log("updatedStreak", updatedStreak);
     return updatedStreak;

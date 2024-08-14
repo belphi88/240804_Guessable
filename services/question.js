@@ -17,48 +17,48 @@ class Question {
   async getQuestion(date, userId) {
     try{
       const question = await QuestionModel.findOne({
-      include: [
-        {
-          model: this.model,
-          required: true
-        }
-      ],
-      where: {
-        date: date
-      },
-      raw: true
-    });
-    if (!question) {
-      const error = new Error("Could not find the Question");
-      // error.statusCode = 404;
-      // throw error;
-      return undefined
-    }
-    let attempt = await Attempt.findOne({
-      where: {
-        userID: userId,
-        quesID: question.id
-      },
-      raw: true
-    });
-
-    // Create a new attempt if it doesn't exist
-    if (!attempt) {
-      attempt = await Attempt.create({
-        userID: userId,
-        quesID: question.id
+        include: [
+          {
+            model: this.model,
+            required: true
+          }
+        ],
+        where: {
+          date: date
+        },
+        raw: true
+      });
+      if (!question) {
+        const error = new Error("Could not find the Question");
+        // error.statusCode = 404;
+        // throw error;
+        return undefined;
+      }
+      let attempt = await Attempt.findOne({
+        where: {
+          userID: userId,
+          quesID: question.id
+        },
+        raw: true
       });
 
-      // Extract raw response
-      attempt = attempt.get({ plain: true });
-      console.info("Attempt created: " + attempt); // Log the raw attempt data
-    }
+      // Create a new attempt if it doesn't exist
+      if (!attempt) {
+        attempt = await Attempt.create({
+          userID: userId,
+          quesID: question.id
+        });
 
-    const response = { ...question, attemptInfo: attempt };
-    console.info(response);
-    return response;
-  }catch(e){
-    return undefined
+        // Extract raw response
+        attempt = attempt.get({ plain: true });
+        console.info("Attempt created: " + attempt); // Log the raw attempt data
+      }
+
+      const response = { ...question, attemptInfo: attempt };
+      console.info(response);
+      return response;
+    } catch (e) {
+      return undefined;
     }
   }
 
@@ -297,50 +297,71 @@ class Question {
   }
 
   async getQuestionForUnregisteredUser(date, userId) {
-    console.log("RECEIVED USED IDDD ", userId , typeof userId);
-    if(userId !== "null"){
-    const question = await QuestionModel.findOne({
-      include: [
-        {
-          model: this.model,
-          required: true
-        }
-      ],
-      where: {
-        date: date
-      },
-      raw: true
-    });
-    if (!question) {
-      const error = new Error("Could not find the Question");
-      error.statusCode = 404;
-      throw error;
-    }
-    let attemptInfo = {};
-    
-    // try{
-      let attempt = await UnregisteredAttempt.findOne({
-      where: {
-        userID: userId,
-        quesID: question.id
-      },
-      raw: true
-    });
-    // Create a new attempt if it doesn't exist
-    if (!attempt) {
-      attempt = await UnregisteredAttempt.create({
-        userID: userId,
-        quesID: question.id
+    console.log("RECEIVED USED IDDD ", userId, typeof userId);
+    if (userId !== "null") {
+      const question = await QuestionModel.findOne({
+        include: [
+          {
+            model: this.model,
+            required: true
+          }
+        ],
+        where: {
+          date: date
+        },
+        raw: true
       });
-      // Extract raw response
-      attempt = attempt.get({ plain: true });
+      if (!question) {
+        const error = new Error("Could not find the Question");
+        error.statusCode = 404;
+        throw error;
+      }
+      let attemptInfo = {};
 
+      // try{
+      let attempt = await UnregisteredAttempt.findOne({
+        where: {
+          userID: userId,
+          quesID: question.id
+        },
+        raw: true
+      });
+      // Create a new attempt if it doesn't exist
+      if (!attempt) {
+        attempt = await UnregisteredAttempt.create({
+          userID: userId,
+          quesID: question.id
+        });
+        // Extract raw response
+        attempt = attempt.get({ plain: true });
+      }
+      attemptInfo = attempt;
+
+      const response = { ...question, attemptInfo };
+      return response;
     }
-    attemptInfo = attempt;
-
-    const response = { ...question, attemptInfo };
-    return response;
   }
+
+  async getQuestionForStreakReset(date) {
+      const question = await QuestionModel.findOne({
+        include: [
+          {
+            model: this.model,
+            required: true
+          }
+        ],
+        where: {
+          date: date
+        },
+        raw: true
+      });
+      if (!question) {
+        const error = new Error("Could not find the Question");
+        error.statusCode = 404;
+        throw error;
+      }
+      const response = { ...question };
+      return response;
   }
 
   static async getQuestionOnlyNoChild(date, userId, type) {
@@ -382,28 +403,28 @@ class Question {
 
   async questionTypeStats(userId, isAuth) {
     let questions;
-    if(isAuth){
-    questions = await QuestionModel.findAll({
-      include: [
-        {
-          model: this.model,
-          required: true,
-          attributes: []
-        },
-        {
-          model: Attempt,
-          required: true,
-          attributes: ["id", "attemptValue", "isCorrect"],
-          where: {
-            userId: userId
+    if (isAuth) {
+      questions = await QuestionModel.findAll({
+        include: [
+          {
+            model: this.model,
+            required: true,
+            attributes: []
+          },
+          {
+            model: Attempt,
+            required: true,
+            attributes: ["id", "attemptValue", "isCorrect"],
+            where: {
+              userId: userId
+            }
           }
-        }
-      ],
-      attributes: ["id"],
-      raw: true
-    });
+        ],
+        attributes: ["id"],
+        raw: true
+      });
     } else {
-      console.log("UNREGISTERED STATS USER ID ", userId)
+      console.log("UNREGISTERED STATS USER ID ", userId);
       questions = await QuestionModel.findAll({
         include: [
           {
@@ -432,76 +453,75 @@ class Question {
     let winCount = 0;
     let scoreNumerator = 0;
     let scoreDenominator = 0;
-    if(isAuth){
-    questions.forEach((question) => {
-      const attemptValue = question["Attempts.attemptValue"];
-      if (
-        attemptValue >= 1 &&
-        attemptValue <= 4 &&
-        question["Attempts.isCorrect"] === 1
-      ) {
-        attemptCounts[attemptValue]++;
-        if (question["Attempts.isCorrect"] === 1) {
-          winCount++;
-          switch (attemptValue) {
-            case 1:
-              scoreNumerator += 1;
-              break;
-            case 2:
-              scoreNumerator += 0.75;
-              break;
-            case 3:
-              scoreNumerator += 0.5;
-              break;
-            case 4:
-              scoreNumerator += 0.25;
-              break;
+    if (isAuth) {
+      questions.forEach((question) => {
+        const attemptValue = question["Attempts.attemptValue"];
+        if (
+          attemptValue >= 1 &&
+          attemptValue <= 4 &&
+          question["Attempts.isCorrect"] === 1
+        ) {
+          attemptCounts[attemptValue]++;
+          if (question["Attempts.isCorrect"] === 1) {
+            winCount++;
+            switch (attemptValue) {
+              case 1:
+                scoreNumerator += 1;
+                break;
+              case 2:
+                scoreNumerator += 0.75;
+                break;
+              case 3:
+                scoreNumerator += 0.5;
+                break;
+              case 4:
+                scoreNumerator += 0.25;
+                break;
+            }
+          }
+        } else {
+          if (attemptValue !== null) {
+            attemptCounts["X"]++; // Increment count for unattempted guesses
           }
         }
-      } else {
-        if (attemptValue !== null) {
-          attemptCounts["X"]++; // Increment count for unattempted guesses
-        }
-      }
-      scoreDenominator++;
-    });
+        scoreDenominator++;
+      });
     } else {
-          questions.forEach((question) => {
-            const attemptValue = question["UnregisteredAttempts.attemptValue"];
-            if (
-              attemptValue !== null &&
-              attemptValue >= 1 &&
-              attemptValue <= 4 &&
-              question["UnregisteredAttempts.isCorrect"] === 1
-            ) {
-              attemptCounts[attemptValue]++;
-              if (question["UnregisteredAttempts.isCorrect"] === 1) {
-                winCount++;
-                switch (attemptValue) {
-                  case 1:
-                    scoreNumerator += 1;
-                    break;
-                  case 2:
-                    scoreNumerator += 0.75;
-                    break;
-                  case 3:
-                    scoreNumerator += 0.5;
-                    break;
-                  case 4:
-                    scoreNumerator += 0.25;
-                    break;
-                }
-              }
-            } else {
-              if (attemptValue !== null) {
-                attemptCounts["X"]++; // Increment count for unattempted guesses
-              }
+      questions.forEach((question) => {
+        const attemptValue = question["UnregisteredAttempts.attemptValue"];
+        if (
+          attemptValue !== null &&
+          attemptValue >= 1 &&
+          attemptValue <= 4 &&
+          question["UnregisteredAttempts.isCorrect"] === 1
+        ) {
+          attemptCounts[attemptValue]++;
+          if (question["UnregisteredAttempts.isCorrect"] === 1) {
+            winCount++;
+            switch (attemptValue) {
+              case 1:
+                scoreNumerator += 1;
+                break;
+              case 2:
+                scoreNumerator += 0.75;
+                break;
+              case 3:
+                scoreNumerator += 0.5;
+                break;
+              case 4:
+                scoreNumerator += 0.25;
+                break;
             }
-            scoreDenominator++;
-          });
+          }
+        } else {
+          if (attemptValue !== null) {
+            attemptCounts["X"]++; // Increment count for unattempted guesses
+          }
+        }
+        scoreDenominator++;
+      });
     }
     // Count attempts and wins
-
 
     // Calculate win percentage
     const totalAttempts = Object.values(attemptCounts).reduce(

@@ -35,6 +35,20 @@ class PeopleQuestion extends Question {
       return undefined;
     }
   }
+  async getQuestionForStreakReset(date) {
+    try {
+      let question = await super.getQuestionForStreakReset(date);
+      if (!question) {
+        let error = new Error("Could not fetch question please try again!");
+        // error.statusCode = 404;
+        // throw error;
+        return undefined;
+      }
+      return question;
+    } catch (e) {
+      return undefined;
+    }
+  }
 
   createQuestionResponse(question) {
     let response = {};
