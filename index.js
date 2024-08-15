@@ -57,7 +57,7 @@ function resetStreakCronJon() {
  UserServices.streakResetCron();
 }
 
-cron.schedule("06 0 * * *", resetStreakCronJon, {
+cron.schedule("0 0 * * *", resetStreakCronJon, {
   scheduled: true,
   timezone: "UTC"
 });
