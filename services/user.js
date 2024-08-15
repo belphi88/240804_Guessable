@@ -328,13 +328,13 @@ class UserServices {
 
             switch (questionType) {
               case QuestionsConstants.COUNTRY:
-                obj.countryStreak = 20;
+                obj.countryStreak = 0;
                 break;
               case QuestionsConstants.MOVIE:
-                obj.movieStreak = 20;
+                obj.movieStreak = 0;
                 break;
               case QuestionsConstants.PEOPLE:
-                obj.peopleStreak = 20;
+                obj.peopleStreak = 0;
                 break;
             }
 
