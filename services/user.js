@@ -315,7 +315,9 @@ class UserServices {
           raw: true
         });
         console.log("ATTEMPT DATA ", questionAttemptsData);
-        const playedUserIds = questionAttemptsData.map((item) => item.userID);
+        const playedUserIds = questionAttemptsData
+        .filter((item) => item.isCorrect === 1)
+        .map((item) => item.userID);
 
         console.log("PLAYED USER IDS ", playedUserIds);
 
