@@ -78,14 +78,16 @@ class MovieQuestion extends Question {
 
     if (attemptValue >= 2) {
       attemptInfo.clueTwo = {
-        Director: question["MovieQuestion.clueDirector"]
+        // Director: question["MovieQuestion.clueDirector"]
+        Cast: question["MovieQuestion.clueCast"]
       };
       response.allResponses = [attempt.firstAttempt, attempt.secondAttempt];
     }
 
     if (attemptValue >= 3) {
       attemptInfo.clueThree = {
-        Cast: question["MovieQuestion.clueCast"]
+        // Cast: question["MovieQuestion.clueCast"]
+        Director: question["MovieQuestion.clueDirector"]
       };
       response.allResponses = [
         attempt.firstAttempt,
@@ -100,10 +102,12 @@ class MovieQuestion extends Question {
         Year: question["MovieQuestion.clueYear"]
       };
       attemptInfo.clueTwo = {
-        Director: question["MovieQuestion.clueDirector"]
+        // Director: question["MovieQuestion.clueDirector"]
+        Cast: question["MovieQuestion.clueCast"]
       };
       attemptInfo.clueThree = {
-        Cast: question["MovieQuestion.clueCast"]
+        // Cast: question["MovieQuestion.clueCast"]
+        Director: question["MovieQuestion.clueDirector"]
       };
       response.allResponses = [
         attempt.firstAttempt,
