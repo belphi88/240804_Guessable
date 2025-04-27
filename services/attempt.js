@@ -195,7 +195,8 @@ class Attempt {
           questionType === QuestionsConstants.COUNTRY
             ? { flag: questionData.clueFlag }
             : questionType === QuestionsConstants.MOVIE
-            ? { cast: questionData.clueCast }
+            // ? { cast: questionData.clueCast }
+            ? { director: questionData.clueDirector }
             : { lifespan: questionData.clueLifespan };
         updatedAttempt.secondAttempt = chooseValue;
       } else if (attempt.attemptValue == 2) {
@@ -204,7 +205,8 @@ class Attempt {
           questionType === QuestionsConstants.COUNTRY
             ? { capital: questionData.clueCapital }
             : questionType === QuestionsConstants.MOVIE
-            ? { director: questionData.clueDirector }
+            ? { cast: questionData.clueCast }
+            // ? { director: questionData.clueDirector }
             : { initials: questionData.clueInitials };
         updatedAttempt.thirdAttempt = chooseValue;
       }
@@ -402,14 +404,16 @@ class Attempt {
       questionType === QuestionsConstants.COUNTRY
         ? { flag: questionData.clueFlag }
         : questionType === QuestionsConstants.MOVIE
-        ? { cast: questionData.clueCast }
+        // ? { cast: questionData.clueCast }
+        ? { director: questionData.clueDirector }
         : { lifespan: questionData.clueLifespan };
 
     response.clueThree =
       questionType === QuestionsConstants.COUNTRY
         ? { capital: questionData.clueCapital }
         : questionType === QuestionsConstants.MOVIE
-        ? { director: questionData.clueDirector }
+        ? { cast: questionData.clueCast }
+        // ? { director: questionData.clueDirector }
         : { initials: questionData.clueInitials };
     response.clueMainAfter = questionData.clueMainAfter;
 
